@@ -243,8 +243,8 @@ const Validation = (() => {
           <h3 class="section-title" style="font-size:1.4rem; margin:0;">💌 Share Greeting Link</h3>
           <button id="share-modal-close" class="btn btn-ghost btn-sm" aria-label="Close" style="border-radius:50%; width:32px; height:32px; padding:0;">✕</button>
         </div>
-        <p class="body-text" style="font-size:0.9rem; margin-bottom:1rem; opacity:0.8;">
-          Copy this link and send it to <strong>${recipientName || 'the birthday person'}</strong>!
+        <p class="body-text" style="font-size:0.9rem; margin-bottom:0.75rem; opacity:0.8;">
+          Send this personalized link to <strong>${recipientName || 'the birthday person'}</strong>!
         </p>
 
         <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
@@ -254,8 +254,8 @@ const Validation = (() => {
           </button>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
-          <span id="share-link-badge" class="form-hint" style="font-size:0.78rem;">Compact Link (${currentUrl.length} chars)</span>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+          <span id="share-link-badge" class="form-hint" style="font-size:0.78rem;">Clean Custom URL (${currentUrl.length} chars)</span>
           <button id="share-modal-shorten-btn" class="btn btn-outline btn-sm" style="font-size:0.78rem; padding:0.3rem 0.8rem;">
             ⚡ Shorten Link
           </button>
@@ -292,7 +292,7 @@ const Validation = (() => {
     const updateUrlDisplay = (newUrl, isShort = false) => {
       currentUrl = newUrl;
       inputEl.value = newUrl;
-      badgeEl.textContent = isShort ? `✨ Shortened Link (${newUrl.length} chars)` : `Compact Link (${newUrl.length} chars)`;
+      badgeEl.textContent = isShort ? `✨ Shortened Link (${newUrl.length} chars)` : `Clean URL (${newUrl.length} chars)`;
       const newLinks = buildShareLinks(newUrl);
       waEl.href = newLinks.wa;
       tgEl.href = newLinks.tg;
@@ -330,7 +330,7 @@ const Validation = (() => {
       shortenBtn.textContent = '⏳ Shortening...';
       shortenBtn.disabled = true;
       if (typeof BirthdayData !== 'undefined' && BirthdayData.getShortenedUrl) {
-        const short = await BirthdayData.getShortenedUrl(shareUrl);
+        const short = await BirthdayData.getShortenedUrl(currentUrl);
         if (short) {
           updateUrlDisplay(short, true);
           shortenBtn.textContent = '⚡ Shortened!';
@@ -343,7 +343,7 @@ const Validation = (() => {
       }
     });
 
-    // Auto-shorten attempt if reachable
+    // Auto-shorten attempt
     if (typeof BirthdayData !== 'undefined' && BirthdayData.getShortenedUrl) {
       BirthdayData.getShortenedUrl(shareUrl).then(short => {
         if (short) {
