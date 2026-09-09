@@ -1,0 +1,158 @@
+/* ============================================================
+   BirthdayVerse – Theme System
+   ============================================================ */
+
+/* ── CUTE THEME (default) ── */
+[data-theme="cute"] {
+  /* Base Colors */
+  --color-bg: #fff5f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #fff0f5;
+  --color-text: #2d1b2d;
+  --color-text-muted: #7a5a7a;
+  --color-border: #f0c8d8;
+  --color-primary: #ff69b4;
+  --color-primary-dark: #e0559e;
+  --color-secondary: #ffb3e0;
+  --color-accent: #a855f7;
+  --color-primary-alpha: rgba(255, 105, 180, 0.18);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #ff69b4, #a855f7);
+  --gradient-bg: linear-gradient(135deg, #fff5f8 0%, #fce4ec 50%, #f3e5f5 100%);
+  --gradient-hero: linear-gradient(135deg, #ffb3e0 0%, #ff69b4 40%, #a855f7 100%);
+  --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,240,248,0.8));
+
+  /* Glass Effect */
+  --color-glass: rgba(255, 255, 255, 0.65);
+  --color-glass-border: rgba(255, 105, 180, 0.25);
+
+  /* UI */
+  --color-nav-bg: rgba(255, 245, 248, 0.85);
+  --color-input-bg: rgba(255, 240, 248, 0.6);
+  --color-input-focus: rgba(255, 240, 248, 0.9);
+
+  /* Shadow glow */
+  --shadow-glow: 0 0 40px rgba(255, 105, 180, 0.35);
+}
+
+/* ── ELEGANT THEME ── */
+[data-theme="elegant"] {
+  --color-bg: #0d0d0d;
+  --color-surface: #1a1a1a;
+  --color-surface-2: #222222;
+  --color-text: #f5f0e8;
+  --color-text-muted: #9b9080;
+  --color-border: #333333;
+  --color-primary: #d4af72;
+  --color-primary-dark: #b8963a;
+  --color-secondary: #e8d5a3;
+  --color-accent: #c59b4e;
+  --color-primary-alpha: rgba(212, 175, 114, 0.2);
+
+  --gradient-primary: linear-gradient(135deg, #d4af72, #b8963a, #f0d080);
+  --gradient-bg: linear-gradient(135deg, #0d0d0d 0%, #1a1208 50%, #0d0d0d 100%);
+  --gradient-hero: linear-gradient(135deg, #2a1f00 0%, #d4af72 60%, #f0d080 100%);
+  --gradient-card: linear-gradient(145deg, rgba(26,26,26,0.95), rgba(40,32,10,0.8));
+
+  --color-glass: rgba(26, 26, 26, 0.80);
+  --color-glass-border: rgba(212, 175, 114, 0.3);
+  --color-nav-bg: rgba(13, 13, 13, 0.90);
+  --color-input-bg: rgba(255, 255, 255, 0.04);
+  --color-input-focus: rgba(212, 175, 114, 0.06);
+
+  --shadow-glow: 0 0 40px rgba(212, 175, 114, 0.3);
+}
+
+/* ── ROMANTIC THEME ── */
+[data-theme="romantic"] {
+  --color-bg: #1a0a0a;
+  --color-surface: #2d1515;
+  --color-surface-2: #3d1e1e;
+  --color-text: #f9e8e8;
+  --color-text-muted: #c08080;
+  --color-border: #5c2a2a;
+  --color-primary: #ff4d7e;
+  --color-primary-dark: #e03060;
+  --color-secondary: #ff8fab;
+  --color-accent: #ff2d55;
+  --color-primary-alpha: rgba(255, 77, 126, 0.2);
+
+  --gradient-primary: linear-gradient(135deg, #ff4d7e, #c2185b, #ff7043);
+  --gradient-bg: linear-gradient(135deg, #1a0a0a 0%, #2d1515 50%, #1a0a0a 100%);
+  --gradient-hero: linear-gradient(135deg, #4d0000 0%, #ff4d7e 60%, #ff7043 100%);
+  --gradient-card: linear-gradient(145deg, rgba(45,21,21,0.95), rgba(60,20,30,0.8));
+
+  --color-glass: rgba(45, 21, 21, 0.80);
+  --color-glass-border: rgba(255, 77, 126, 0.3);
+  --color-nav-bg: rgba(26, 10, 10, 0.90);
+  --color-input-bg: rgba(255, 77, 126, 0.05);
+  --color-input-focus: rgba(255, 77, 126, 0.10);
+
+  --shadow-glow: 0 0 40px rgba(255, 77, 126, 0.35);
+}
+
+/* ── FUN THEME ── */
+[data-theme="fun"] {
+  --color-bg: #f0f9ff;
+  --color-surface: #ffffff;
+  --color-surface-2: #e8f4fd;
+  --color-text: #1a2a4a;
+  --color-text-muted: #4a7a9a;
+  --color-border: #bee3f8;
+  --color-primary: #00b4d8;
+  --color-primary-dark: #0077b6;
+  --color-secondary: #48cae4;
+  --color-accent: #f72585;
+  --color-primary-alpha: rgba(0, 180, 216, 0.18);
+
+  --gradient-primary: linear-gradient(135deg, #00b4d8, #f72585, #8338ec);
+  --gradient-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f4ff 50%, #f0e8ff 100%);
+  --gradient-hero: linear-gradient(135deg, #caf0f8 0%, #00b4d8 40%, #8338ec 100%);
+  --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(224,248,255,0.8));
+
+  --color-glass: rgba(255, 255, 255, 0.75);
+  --color-glass-border: rgba(0, 180, 216, 0.25);
+  --color-nav-bg: rgba(240, 249, 255, 0.88);
+  --color-input-bg: rgba(224, 244, 255, 0.6);
+  --color-input-focus: rgba(224, 244, 255, 0.9);
+
+  --shadow-glow: 0 0 40px rgba(0, 180, 216, 0.35);
+}
+
+/* ── DARK NEON THEME ── */
+[data-theme="dark-neon"] {
+  --color-bg: #050510;
+  --color-surface: #0d0d20;
+  --color-surface-2: #151530;
+  --color-text: #e0e8ff;
+  --color-text-muted: #7080c0;
+  --color-border: #1a1a40;
+  --color-primary: #8b5cf6;
+  --color-primary-dark: #6d28d9;
+  --color-secondary: #a78bfa;
+  --color-accent: #06b6d4;
+  --color-primary-alpha: rgba(139, 92, 246, 0.2);
+
+  --gradient-primary: linear-gradient(135deg, #8b5cf6, #06b6d4, #10b981);
+  --gradient-bg: radial-gradient(ellipse at 20% 20%, rgba(139,92,246,0.15) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 80%, rgba(6,182,212,0.1) 0%, transparent 50%),
+                  linear-gradient(135deg, #050510 0%, #0d0820 100%);
+  --gradient-hero: linear-gradient(135deg, #1a0a40 0%, #8b5cf6 60%, #06b6d4 100%);
+  --gradient-card: linear-gradient(145deg, rgba(13,13,32,0.95), rgba(20,10,40,0.8));
+
+  --color-glass: rgba(13, 13, 32, 0.80);
+  --color-glass-border: rgba(139, 92, 246, 0.3);
+  --color-nav-bg: rgba(5, 5, 16, 0.92);
+  --color-input-bg: rgba(139, 92, 246, 0.05);
+  --color-input-focus: rgba(139, 92, 246, 0.12);
+
+  --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.4);
+}
+
+/* ── Theme Preview Swatches ── */
+.theme-preview-cute { background: linear-gradient(135deg, #ff69b4, #a855f7); }
+.theme-preview-elegant { background: linear-gradient(135deg, #d4af72, #b8963a, #f0d080); }
+.theme-preview-romantic { background: linear-gradient(135deg, #ff4d7e, #c2185b, #ff7043); }
+.theme-preview-fun { background: linear-gradient(135deg, #00b4d8, #f72585, #8338ec); }
+.theme-preview-dark-neon { background: linear-gradient(135deg, #8b5cf6, #06b6d4, #10b981); }

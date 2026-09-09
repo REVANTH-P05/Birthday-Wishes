@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cute">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Preview your personalized birthday experience before sharing it.">
+  <title>Preview – BirthdayVerse 🔍</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <style>
+    body {
+      background: var(--gradient-bg);
+    }
+
+    .preview-hero {
+      padding: 7rem 0 2rem;
+      text-align: center;
+    }
+
+    .preview-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--color-primary-alpha);
+      border: 1px solid var(--color-primary);
+      color: var(--color-primary);
+      padding: 0.4rem 1.2rem;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    /* Summary Card */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .summary-item {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-base);
+    }
+
+    .summary-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary);
+    }
+
+    .summary-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .summary-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.55;
+      margin-bottom: 0.25rem;
+    }
+
+    .summary-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .summary-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .check-yes { color: #10b981; }
+    .check-no { color: #ff4d7e; opacity: 0.6; }
+
+    /* Mock device frame */
+    .device-preview {
+      max-width: 780px;
+      margin: 2rem auto;
+      perspective: 1000px;
+    }
+
+    .device-frame {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-xl), 0 0 60px var(--color-primary-alpha);
+      transform: rotateX(2deg);
+      transition: transform 0.5s ease;
+    }
+
+    .device-frame:hover { transform: rotateX(0deg); }
+
+    .device-topbar {
+      background: var(--gradient-primary);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #fff;
+      font-size: 0.875rem;
+    }
+
+    .device-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .device-control {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dc-red { background: #ff5f57; }
+    .dc-yellow { background: #febc2e; }
+    .dc-green { background: #28c840; }
+
+    .device-url {
+      flex: 1;
+      background: rgba(255,255,255,0.15);
+      border-radius: 99px;
+      padding: 0.25rem 1rem;
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+
+    .device-body {
+      padding: 0;
+      background: var(--color-surface);
+      min-height: 500px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Mini preview inside device */
+    .mini-experience {
+      padding: 2.5rem 2rem;
+    }
+
+    .mini-welcome {
+      text-align: center;
+      padding: 2rem;
+      background: var(--color-primary-alpha);
+      border-radius: var(--radius-lg);
+      margin-bottom: 1.5rem;
+    }
+
+    .mini-welcome-emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .mini-welcome-text { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; }
+    .mini-welcome-sub { font-size: 0.85rem; opacity: 0.6; margin-top: 0.25rem; }
+
+    .mini-start-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding: 0.65rem 1.5rem;
+      background: var(--gradient-primary);
+      color: #fff;
+      border-radius: 99px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition-bounce);
+    }
+
+    .mini-start-btn:hover { transform: scale(1.04); }
+
+    .mini-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .mini-section-card {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .mini-section-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+    .mini-section-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      opacity: 0.6;
+    }
+
+    .mini-section-value {
+      font-size: 0.9rem;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Photo strip */
+    .mini-photo-strip {
+      display: flex;
+      gap: 0.5rem;
+      overflow: hidden;
+    }
+
+    .mini-photo-strip img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .mini-photo-count {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-sm);
+      background: var(--color-primary-alpha);
+      border: 2px dashed var(--color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--color-primary);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* Theme badge */
+    .theme-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--color-primary-alpha);
+      color: var(--color-primary);
+      border: 1px solid var(--color-primary);
+    }
+
+    /* Action panel */
+    .action-panel {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      max-width: 780px;
+      margin: 2rem auto;
+      box-shadow: var(--shadow-md);
+    }
+
+    .action-panel-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* Checklist */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      border-radius: var(--radius-md);
+      background: var(--color-surface-2);
+      font-size: 0.9rem;
+    }
+
+    .checklist-item.ok { border-left: 3px solid #10b981; }
+    .checklist-item.warn { border-left: 3px solid #f59e0b; }
+    .checklist-item.error { border-left: 3px solid #ff4d7e; }
+  </style>
+</head>
+<body>
+
+  <canvas id="confetti-canvas"></canvas>
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-brand">
+      <span class="brand-icon">🎂</span>
+      <span>BirthdayVerse</span>
+    </div>
+    <ul class="navbar-links">
+      <li><a href="index.html">Experience</a></li>
+      <li><a href="customize.html">Customize</a></li>
+    </ul>
+    <div class="navbar-actions">
+      <a href="index.html" class="btn btn-primary btn-sm">🎉 Open Experience</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="preview-hero">
+    <div class="container">
+      <div class="preview-hero-badge animate-fadeInDown">
+        🔍 Birthday Preview
+      </div>
+      <h1 class="display-title animate-fadeInUp delay-200">
+        Ready to Send? 🚀
+      </h1>
+      <p class="body-text animate-fadeInUp delay-400" style="max-width: 520px; margin: 0.75rem auto;">
+        Review all your birthday details below before sharing the experience.
+      </p>
+    </div>
+  </section>
+
+  <div class="container" style="padding-bottom: 4rem;">
+
+    <!-- ── Summary Cards ── -->
+    <div class="summary-grid animate-fadeInUp delay-200" id="summary-grid">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- ── Checklist ── -->
+    <div style="max-width:780px; margin: 0 auto 2rem;">
+      <h2 class="section-title reveal" style="font-size:1.3rem; margin-bottom:1rem;">✅ Readiness Checklist</h2>
+      <div class="checklist reveal" id="checklist">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- ── Device Preview ── -->
+    <div class="device-preview">
+      <div class="device-frame reveal">
+        <div class="device-topbar">
+          <div class="device-controls">
+            <span class="device-control dc-red"></span>
+            <span class="device-control dc-yellow"></span>
+            <span class="device-control dc-green"></span>
+          </div>
+          <span class="device-url" id="preview-url">birthdayverse / index.html</span>
+        </div>
+        <div class="device-body">
+          <div class="mini-experience">
+
+            <!-- Mini welcome -->
+            <div class="mini-welcome reveal">
+              <div class="mini-welcome-emoji">💌</div>
+              <div class="mini-welcome-text">Someone prepared a surprise…</div>
+              <div class="mini-welcome-sub" id="mini-recipient">For <span id="mini-name-display">you</span></div>
+              <button class="mini-start-btn" disabled>🎁 Open Your Surprise</button>
+            </div>
+
+            <!-- Mini sections list -->
+            <div class="mini-sections">
+              <div class="mini-section-card reveal">
+                <span class="mini-section-icon">🎂</span>
+                <div style="min-width:0; flex:1;">
+                  <div class="mini-section-label">Birthday Message</div>
+                  <p class="mini-section-value" id="mini-birthday-msg">—</p>
+                </div>
+              </div>
+
+              <div class="mini-section-card reveal delay-100">
+                <span class="mini-section-icon">💌</span>
+                <div style="min-width:0; flex:1;">
+                  <div class="mini-section-label">Personal Letter</div>
+                  <p class="mini-section-value" id="mini-personal-msg">—</p>
+                </div>
+              </div>
+
+              <div class="mini-section-card reveal delay-200">
+                <span class="mini-section-icon">📸</span>
+                <div style="min-width:0; flex:1;">
+                  <div class="mini-section-label">Memory Photos</div>
+                  <div class="mini-photo-strip" id="mini-photo-strip">
+                    <span style="opacity:0.5; font-size:0.85rem;">No photos uploaded</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mini-section-card reveal delay-300">
+                <span class="mini-section-icon">✨</span>
+                <div style="min-width:0; flex:1;">
+                  <div class="mini-section-label">Why They Are Special</div>
+                  <p class="mini-section-value" id="mini-reasons">—</p>
+                </div>
+              </div>
+
+              <div class="mini-section-card reveal delay-400">
+                <span class="mini-section-icon">🎨</span>
+                <div style="min-width:0; flex:1;">
+                  <div class="mini-section-label">Theme</div>
+                  <span class="theme-badge" id="mini-theme">cute</span>
+                </div>
+              </div>
+
+              <div class="mini-section-card reveal delay-500">
+                <span class="mini-section-icon">🎵</span>
+                <div style="min-width:0; flex:1;">
+                  <div class="mini-section-label">Background Music</div>
+                  <p class="mini-section-value" id="mini-music">No music selected</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Action Panel ── -->
+    <div class="action-panel reveal">
+      <div class="action-panel-title">🚀 Ready to Share?</div>
+      <p style="opacity:0.7; margin-bottom:1.5rem; font-size:0.95rem;">
+        Open the experience page and share the link with the birthday person. They'll see the magical surprise you created! 🎉
+      </p>
+      <div class="action-row">
+        <a href="index.html" class="btn btn-primary btn-lg">
+          🎂 Open Experience
+        </a>
+        <a href="customize.html" class="btn btn-outline btn-lg">
+          ✏️ Edit Birthday
+        </a>
+        <button id="preview-copy-link-btn" class="btn btn-ghost btn-lg">
+          📋 Copy Link
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer style="text-align:center; padding:2rem; opacity:0.45; font-size:0.85rem; border-top:1px solid var(--color-border);">
+    Made with ❤️ by BirthdayVerse
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/birthday-data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/animations.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const data = BirthdayData.getCurrent();
+      const photos = Storage.getPhotos();
+      const profileSrc = Storage.getProfilePhoto();
+      const musicSrc = Storage.getMusic();
+
+      // Apply theme
+      document.documentElement.setAttribute('data-theme', data.theme || 'cute');
+
+      // ── Summary Grid ──
+      const themeNames = {
+        'cute': '🌸 Cute',
+        'elegant': '🥂 Elegant',
+        'romantic': '❤️ Romantic',
+        'fun': '🎉 Fun',
+        'dark-neon': '⭐ Dark Neon'
+      };
+
+      function formatDate(dateStr) {
+        if (!dateStr) return null;
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+
+      const summaryItems = [
+        { icon: '👤', label: 'Name', value: data.name || '—' },
+        { icon: '🎂', label: 'Age', value: data.age ? `${data.age} years` : 'Not specified' },
+        { icon: '💝', label: 'Relationship', value: data.relationship || 'Not specified' },
+        { icon: '📅', label: 'Birthday', value: formatDate(data.birthday) || '—' },
+        { icon: '📸', label: 'Profile Photo', value: profileSrc ? '✅ Uploaded' : '⬜ Not uploaded' },
+        { icon: '🖼️', label: 'Memory Photos', value: `${photos.length} photo${photos.length !== 1 ? 's' : ''}` },
+        { icon: '🎨', label: 'Theme', value: themeNames[data.theme] || data.theme || 'Cute' },
+        { icon: '🎵', label: 'Music', value: musicSrc ? '✅ Uploaded' : '⬜ None' },
+        { icon: '⭐', label: 'Special Reasons', value: `${(data.specialReasons || []).length} reason${(data.specialReasons || []).length !== 1 ? 's' : ''}` },
+        {
+          icon: '✨', label: 'Effects',
+          value: [
+            data.showConfetti !== false ? 'Confetti' : '',
+            data.showBalloons !== false ? 'Balloons' : '',
+            data.showHearts !== false ? 'Hearts' : '',
+            data.showCountdown ? 'Countdown' : '',
+            data.showMiniGame ? 'Mini Game' : ''
+          ].filter(Boolean).join(', ') || 'None enabled'
+        }
+      ];
+
+      const grid = document.getElementById('summary-grid');
+      if (grid) {
+        grid.innerHTML = summaryItems.map((item, i) => `
+          <div class="summary-item reveal" style="animation-delay: ${i * 0.04}s">
+            <span class="summary-icon">${item.icon}</span>
+            <div>
+              <div class="summary-label">${item.label}</div>
+              <div class="summary-value">${item.value}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // ── Checklist ──
+      const checks = [
+        { label: 'Name entered', ok: !!(data.name && data.name.trim()), required: true },
+        { label: 'Birthday date set', ok: !!data.birthday, required: true },
+        { label: 'Birthday message written', ok: !!(data.birthdayMessage && data.birthdayMessage.trim()), required: true },
+        { label: 'Profile photo uploaded', ok: !!profileSrc, required: false },
+        { label: 'Personal message written', ok: !!(data.personalMessage && data.personalMessage.trim()), required: false },
+        { label: 'Memory photos added', ok: photos.length > 0, required: false },
+        { label: 'Special reasons added', ok: (data.specialReasons || []).length > 0, required: false },
+        { label: 'Background music selected', ok: !!musicSrc, required: false },
+      ];
+
+      const checklistEl = document.getElementById('checklist');
+      if (checklistEl) {
+        checklistEl.innerHTML = checks.map(c => `
+          <div class="checklist-item ${c.ok ? 'ok' : c.required ? 'error' : 'warn'}">
+            <span>${c.ok ? '✅' : c.required ? '❌' : '⚠️'}</span>
+            <span>${c.label}</span>
+            ${!c.ok && c.required ? '<span style="margin-left:auto;font-size:0.78rem;color:#ff4d7e;font-weight:600;">Required</span>' : ''}
+            ${!c.ok && !c.required ? '<span style="margin-left:auto;font-size:0.78rem;opacity:0.5;">Optional</span>' : ''}
+          </div>
+        `).join('');
+      }
+
+      // ── Mini Preview ──
+      const miniName = document.getElementById('mini-name-display');
+      if (miniName) miniName.textContent = data.name || 'you';
+
+      const miniBdMsg = document.getElementById('mini-birthday-msg');
+      if (miniBdMsg) miniBdMsg.textContent = data.birthdayMessage ? data.birthdayMessage.substring(0, 60) + (data.birthdayMessage.length > 60 ? '…' : '') : 'Not set';
+
+      const miniPersonal = document.getElementById('mini-personal-msg');
+      if (miniPersonal) miniPersonal.textContent = data.personalMessage ? data.personalMessage.substring(0, 70) + '…' : 'Not written';
+
+      const photoStrip = document.getElementById('mini-photo-strip');
+      if (photoStrip && photos.length > 0) {
+        const maxShow = 4;
+        photoStrip.innerHTML = photos.slice(0, maxShow).map(p =>
+          `<img src="${p.src}" alt="Memory">`
+        ).join('') + (photos.length > maxShow ? `<div class="mini-photo-count">+${photos.length - maxShow}</div>` : '');
+      }
+
+      const miniReasons = document.getElementById('mini-reasons');
+      if (miniReasons) {
+        const reasons = (data.specialReasons || []).filter(r => r.trim());
+        miniReasons.textContent = reasons.length > 0 ? `${reasons.length} reason${reasons.length > 1 ? 's' : ''} listed` : 'None added';
+      }
+
+      const miniTheme = document.getElementById('mini-theme');
+      if (miniTheme) miniTheme.textContent = themeNames[data.theme] || '🌸 Cute';
+
+      const miniMusic = document.getElementById('mini-music');
+      if (miniMusic) miniMusic.textContent = musicSrc ? '🎵 Music loaded' : 'No music';
+
+      // ── Copy Link ──
+      document.getElementById('preview-copy-link-btn')?.addEventListener('click', async () => {
+        const url = window.location.origin + window.location.pathname.replace('preview.html', 'index.html');
+        try {
+          await navigator.clipboard.writeText(url);
+          Validation.showToast('Link copied to clipboard! 📋', 'success');
+        } catch {
+          Validation.showToast('Please copy the page URL manually.', 'info');
+        }
+      });
+
+      // ── Init ──
+      Animations.initScrollReveal();
+      Animations.initCustomCursor();
+
+      // Scroll navbar effect
+      window.addEventListener('scroll', () => {
+        document.querySelector('.navbar')?.classList.toggle('scrolled', window.scrollY > 60);
+      });
+    });
+  </script>
+</body>
+</html>
