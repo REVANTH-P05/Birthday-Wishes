@@ -172,10 +172,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => Animations.initScrollReveal(), 400);
 
     // Gallery
-    if (photos.length > 0) {
+    if (photos && photos.length > 0) {
       const gallerySection = document.getElementById('gallery-section');
       Gallery.buildCarousel('gallery-container', photos);
       gallerySection?.classList.remove('hidden');
+    } else {
+      document.getElementById('gallery-section')?.classList.add('hidden');
     }
 
     // Typing animation for birthday message
@@ -483,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Share Button (Generates full encoded greeting URL) ──
   document.getElementById('share-btn')?.addEventListener('click', async () => {
-    const shareUrl = BirthdayData.getShareUrl();
+    const shareUrl = await BirthdayData.getShareUrl();
     if (navigator.share) {
       try {
         await navigator.share({

@@ -593,7 +593,7 @@
 
       // ── Copy Link ──
       document.getElementById('preview-copy-link-btn')?.addEventListener('click', async () => {
-        const url = BirthdayData.getShareUrl();
+        const url = await BirthdayData.getShareUrl();
         try {
           await navigator.clipboard.writeText(url);
           Validation.showToast('Greeting Link copied to clipboard! 📋 Share it with them!', 'success');

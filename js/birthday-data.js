@@ -67,6 +67,11 @@ const BirthdayData = (() => {
 
     // ── URL Payload Encoding for Sharing ──
     encodeShareData(data, profilePhoto = null, photos = []) {
+      const formatImg = (src) => {
+        if (!src || typeof src !== 'string') return null;
+        return src.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
+      };
+
       const payload = {
         n: data.name || '',
         a: data.age || '',
@@ -82,13 +87,16 @@ const BirthdayData = (() => {
         cf: data.showConfetti !== false,
         bl: data.showBalloons !== false,
         ht: data.showHearts !== false,
-        p: profilePhoto || null,
-        ph: (photos || []).map(p => ({ s: p.src, c: p.caption || '' }))
+        p: formatImg(profilePhoto),
+        ph: (photos || []).map(item => ({
+          s: formatImg(item.src),
+          c: item.caption || ''
+        }))
       };
       try {
         const json = JSON.stringify(payload);
-        // Safe UTF-8 Base64 encoding
-        return btoa(encodeURIComponent(json));
+        const rawB64 = btoa(encodeURIComponent(json));
+        return encodeURIComponent(rawB64);
       } catch (e) {
         console.error('Error encoding share payload:', e);
         return null;
@@ -98,8 +106,17 @@ const BirthdayData = (() => {
     decodeShareData(encodedStr) {
       if (!encodedStr) return null;
       try {
-        const json = decodeURIComponent(atob(encodedStr));
+        let cleaned = decodeURIComponent(encodedStr);
+        cleaned = cleaned.replace(/ /g, '+');
+        const json = decodeURIComponent(atob(cleaned));
         const p = JSON.parse(json);
+
+        const restoreImg = (str) => {
+          if (!str || typeof str !== 'string') return null;
+          if (str.startsWith('data:') || str.startsWith('http')) return str;
+          return 'data:image/jpeg;base64,' + str;
+        };
+
         return {
           name: p.n || '',
           age: p.a || '',
@@ -115,8 +132,11 @@ const BirthdayData = (() => {
           showConfetti: p.cf !== false,
           showBalloons: p.bl !== false,
           showHearts: p.ht !== false,
-          profileImage: p.p || null,
-          photos: (p.ph || []).map(item => ({ src: item.s, caption: item.c }))
+          profileImage: restoreImg(p.p),
+          photos: (p.ph || []).map(item => ({
+            src: restoreImg(item.s),
+            caption: item.c || ''
+          }))
         };
       } catch (e) {
         console.warn('Failed to decode URL share payload:', e);
@@ -124,16 +144,39 @@ const BirthdayData = (() => {
       }
     },
 
-    getShareUrl() {
+    async getShareUrl() {
       const currentData = this.getCurrent();
-      const profile = (typeof Storage !== 'undefined') ? Storage.getProfilePhoto() : null;
-      const photos = (typeof Storage !== 'undefined') ? Storage.getPhotos() : [];
+      const rawProfile = (typeof Storage !== 'undefined') ? Storage.getProfilePhoto() : null;
+      const rawPhotos = (typeof Storage !== 'undefined') ? Storage.getPhotos() : [];
 
-      // Try full encoding with photos
-      let encoded = this.encodeShareData(currentData, profile, photos);
+      let compressedProfile = null;
+      if (rawProfile && typeof Storage !== 'undefined' && Storage.compressDataUrl) {
+        compressedProfile = await Storage.compressDataUrl(rawProfile, 300, 0.65);
+      } else {
+        compressedProfile = rawProfile;
+      }
 
-      // If payload is over 6KB (for URL safety across all browsers), strip photos
-      if (encoded && encoded.length > 6000) {
+      let compressedPhotos = [];
+      if (rawPhotos.length > 0 && typeof Storage !== 'undefined' && Storage.compressDataUrl) {
+        compressedPhotos = await Promise.all(
+          rawPhotos.map(async (p) => ({
+            src: await Storage.compressDataUrl(p.src, 500, 0.65),
+            caption: p.caption || ''
+          }))
+        );
+      } else {
+        compressedPhotos = rawPhotos;
+      }
+
+      const MAX_SAFE_URL_LEN = 65000;
+      let encoded = this.encodeShareData(currentData, compressedProfile, compressedPhotos);
+
+      while (encoded && encoded.length > MAX_SAFE_URL_LEN && compressedPhotos.length > 0) {
+        compressedPhotos.pop();
+        encoded = this.encodeShareData(currentData, compressedProfile, compressedPhotos);
+      }
+
+      if (encoded && encoded.length > MAX_SAFE_URL_LEN) {
         encoded = this.encodeShareData(currentData, null, []);
       }
 
