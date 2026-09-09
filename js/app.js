@@ -48,10 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Remove navbar action buttons (Edit buttons)
     const navActions = document.querySelector('.navbar-actions');
     if (navActions) {
-      // Keep only music toggle inside navbar actions
-      const musicBtn = document.getElementById('music-toggle');
-      navActions.innerHTML = '';
-      if (musicBtn) navActions.appendChild(musicBtn);
+      navActions.querySelectorAll('a, button:not(#music-toggle)').forEach(el => el.remove());
     }
     // Remove the "Edit Birthday" button in the final section
     document.querySelectorAll('a[href="customize.html"]').forEach(el => el.remove());
@@ -141,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (startBtn) { startBtn.textContent = '✨ Opening…'; startBtn.disabled = true; }
 
     // Play music on user gesture
-    if (musicSrc) BirthdayAudio.play();
+    BirthdayAudio.play();
 
     // Fade out welcome
     if (welcomeScreen) {
