@@ -192,6 +192,8 @@ const BirthdayData = (() => {
       const cleanSlug = rawSlug.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'surprise';
 
       const isFile = window.location.protocol === 'file:';
+      let longUrl = '';
+
       if (isFile) {
         let href = window.location.href.split('#')[0].split('?')[0];
         if (/(customize|preview)\.html$/i.test(href)) {
@@ -199,11 +201,19 @@ const BirthdayData = (() => {
         } else if (!/index\.html$/i.test(href)) {
           href = href.replace(/\/$/, '') + '/index.html';
         }
-        return `${href}?to=${cleanSlug}&card=${encoded}`;
+        longUrl = `${href}?to=${cleanSlug}&card=${encoded}`;
       } else {
         const origin = window.location.origin;
-        return `${origin}/${cleanSlug}?card=${encoded}`;
+        longUrl = `${origin}/${cleanSlug}?card=${encoded}`;
       }
+
+      // Auto-shorten link to guarantee a minimal share link
+      try {
+        const shortUrl = await this.getShortenedUrl(longUrl);
+        if (shortUrl) return shortUrl;
+      } catch (e) {}
+
+      return longUrl;
     },
 
     async getShortenedUrl(longUrl) {

@@ -16,6 +16,19 @@ document.addEventListener('DOMContentLoaded', () => {
     profileSrc = urlData.profileImage || null;
     photos = urlData.photos || [];
     musicSrc = Storage.getMusic(); // optional background music if uploaded
+
+    // Save to storage & mark recipient session so page refresh / back navigation never reverts to empty page
+    BirthdayData.save(data);
+    if (profileSrc) Storage.setProfilePhoto(profileSrc);
+    if (photos && photos.length > 0) Storage.setPhotos(photos);
+    sessionStorage.setItem('birthday_is_recipient', 'true');
+
+    // Clean address bar query string seamlessly
+    try {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    } catch(e) {}
   } else {
     // ── CREATOR / LOCAL MODE: Read from localStorage ──
     data = BirthdayData.getCurrent();
@@ -24,11 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
     musicSrc = Storage.getMusic();
   }
 
+  const isRecipientMode = isSharedLink || sessionStorage.getItem('birthday_is_recipient') === 'true';
+
   // ── Apply theme ──
   document.documentElement.setAttribute('data-theme', data.theme || 'cute');
 
-  // ── RECEIVER PROTECTION: Hide/remove ALL editing options when opening a shared link ──
-  if (isSharedLink) {
+  // ── RECEIVER PROTECTION: Hide/remove ALL editing options when in recipient mode ──
+  if (isRecipientMode) {
     // Remove the Edit FAB if present
     document.querySelectorAll('.fab-edit').forEach(el => el.remove());
     // Remove navbar customize/preview links
@@ -48,8 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Always init audio so the music button works ──
   BirthdayAudio.init('music-toggle');
 
-  // ── Gate: if not configured (neither via URL nor localStorage) ──
-  if (!isSharedLink && !BirthdayData.isConfigured(data)) {
+  // ── Gate: if not configured (neither via URL nor recipient storage) ──
+  if (!isRecipientMode && !BirthdayData.isConfigured(data)) {
     const startBtn = document.getElementById('start-surprise-btn');
     const welcomeSubtitle = document.querySelector('.welcome-subtitle');
     const welcomeEyebrow = document.querySelector('.welcome-eyebrow');
