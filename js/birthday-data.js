@@ -507,20 +507,39 @@ const BirthdayData = (() => {
       if (!encodedStr || encodedStr === 'null' || encodedStr === 'undefined') return null;
       try {
         let json = null;
-        if (encodedStr.startsWith('z_')) {
-          const raw = encodedStr.slice(2);
+        let str = String(encodedStr).trim();
+
+        // 1. Direct JSON check (for raw or URLSearchParams-decoded JSON strings)
+        if (str.startsWith('{') && str.endsWith('}')) {
+          json = str;
+        }
+
+        // 2. Try URL-unescaped JSON check
+        if (!json) {
+          try {
+            const unescaped = decodeURIComponent(str);
+            if (unescaped.trim().startsWith('{') && unescaped.trim().endsWith('}')) {
+              json = unescaped.trim();
+            }
+          } catch (e0) {}
+        }
+
+        // 3. LZString compressed payload (starts with z_)
+        if (!json && str.startsWith('z_')) {
+          const raw = str.slice(2);
           if (typeof LZString !== 'undefined' && LZString.decompressFromEncodedURIComponent) {
             json = LZString.decompressFromEncodedURIComponent(raw);
           }
         }
 
+        // 4. Base64 encoded JSON payload fallback
         if (!json) {
           try {
-            let cleaned = decodeURIComponent(encodedStr.replace(/_/g, '/').replace(/-/g, '+'));
+            let cleaned = decodeURIComponent(str.replace(/_/g, '/').replace(/-/g, '+'));
             json = decodeURIComponent(atob(cleaned));
           } catch (e1) {
             try {
-              json = decodeURIComponent(atob(encodedStr));
+              json = decodeURIComponent(atob(str));
             } catch (e2) {}
           }
         }
@@ -629,6 +648,13 @@ const BirthdayData = (() => {
         // 1. Check Search Parameters (?card=...)
         const urlParams = new URLSearchParams(window.location.search);
         let cardParam = urlParams.get('card') || urlParams.get('greeting') || urlParams.get('d') || urlParams.get('c');
+
+        if (!cardParam && window.location.search) {
+          const match = window.location.search.match(/[?&](card|greeting|d|c)=([^&]+)/i);
+          if (match && match[2]) {
+            cardParam = decodeURIComponent(match[2]);
+          }
+        }
 
         // 2. Check Location Hash (#card=... or #z_...)
         if (!cardParam && window.location.hash) {
