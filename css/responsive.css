@@ -1,5 +1,5 @@
 /* ============================================================
-   BirthdayVerse – Responsive Design
+   BirthdayVerse – Comprehensive Mobile & Responsive Design
    ============================================================ */
 
 /* ── Extra Large (≥1400px) ── */
@@ -12,89 +12,249 @@
   .hero-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* ── Medium Tablets / Small Desktops (768px–1199px) ── */
-@media (max-width: 1199px) {
-  .customize-layout { grid-template-columns: 1fr; }
-  .customize-preview { display: none; }
-}
-
+/* ── Desktop to Tablet Transition (≤1024px) ── */
 @media (max-width: 1024px) {
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-  .reasons-grid { grid-template-columns: repeat(2, 1fr); }
+  .customize-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .customize-preview {
+    display: none !important;
+  }
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .reasons-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-/* ── Tablets (600px–767px) ── */
-@media (max-width: 767px) {
+/* ── Tablets (≤768px) ── */
+@media (max-width: 768px) {
   /* Typography */
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.6rem; }
+  h1, .display-title { font-size: clamp(1.8rem, 6vw, 2.6rem); }
+  h2, .section-title { font-size: clamp(1.4rem, 4vw, 2rem); }
+  .script-text { font-size: clamp(1.3rem, 3.5vw, 1.8rem); }
 
-  /* Layout */
-  .hero-content { text-align: center; }
-  .hero-cta { justify-content: center; flex-wrap: wrap; }
+  /* Navbar */
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+  .navbar-actions {
+    gap: 0.5rem;
+  }
+  .navbar-actions .btn {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+  }
 
-  /* Gallery */
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-  .gallery-nav { bottom: -3rem; }
-
-  /* Experience sections */
-  .letter-card { padding: 2rem 1.5rem; }
-  .reasons-grid { grid-template-columns: 1fr; }
-  .final-section .final-title { font-size: 2.5rem; }
-
-  /* Customize page */
-  .form-row { grid-template-columns: 1fr; }
-  .section-form { padding: 1.5rem; }
-
-  /* Mini game  */
-  #game-canvas { width: 100%; height: 300px; }
-}
-
-/* ── Mobile (≤480px) ── */
-@media (max-width: 480px) {
   /* Spacing */
   .section { padding: 3rem 0; }
   .container { padding: 0 1rem; }
 
-  /* Welcome screen */
+  /* Hero & Welcome */
+  .hero-content { text-align: center; }
+  .hero-cta { justify-content: center; flex-wrap: wrap; }
   .welcome-screen { padding: 2rem 1rem; }
+  .welcome-card { padding: 2rem 1.25rem; width: 100%; max-width: 100%; }
 
-  /* Typography */
-  .birthday-reveal-name { font-size: clamp(2rem, 10vw, 3rem); }
+  /* Customize Page */
+  .customize-hero { padding: 5rem 0 2rem; }
+  .customize-layout {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem;
+  }
+  .step-panel {
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-lg);
+  }
+  .step-header {
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+  }
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  .step-title {
+    font-size: 1.2rem;
+  }
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem;
+  }
+  .section-form {
+    padding: 1.25rem 1rem;
+  }
+
+  /* Step Indicator Bar */
+  .steps-indicator {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.25rem;
+    padding: 0.35rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    background: var(--color-surface);
+    border-radius: var(--radius-full);
+  }
+  .step-item {
+    flex: 1;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+    justify-content: center;
+    gap: 0.35rem;
+  }
 
   /* Gallery */
-  .gallery-carousel-img { height: 240px; }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .gallery-carousel-img { height: 260px; }
+
+  /* Reasons & Cards */
+  .reasons-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .letter-card { padding: 1.75rem 1.25rem; font-size: 0.95rem; }
+
+  /* Countdown Grid (2x2 on Mobile) */
+  .countdown-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .countdown-box {
+    padding: 1rem 0.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .countdown-box .countdown-number {
+    font-size: 2.2rem !important;
+    font-weight: 800 !important;
+    color: var(--color-primary, #e91e63) !important;
+    -webkit-text-fill-color: initial !important;
+    line-height: 1.1 !important;
+  }
+  .countdown-box .countdown-label {
+    font-size: 0.75rem !important;
+    color: var(--color-text) !important;
+    opacity: 0.8 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Balloon Pop Game */
+  #mini-game-section { padding: 2rem 0; }
+  .game-container { padding: 1rem 0.75rem; }
+  .game-hud {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    justify-content: center;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.85rem;
+  }
+  #game-canvas {
+    width: 100% !important;
+    height: 320px !important;
+    border-radius: var(--radius-md);
+  }
+
+  /* Final Actions */
+  .final-actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    gap: 0.85rem;
+  }
+  .final-actions .btn,
+  .final-actions a.btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Preview Page */
+  .preview-hero { padding: 5rem 1rem 1.5rem; }
+  .summary-grid { grid-template-columns: 1fr !important; }
+  .preview-actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.85rem;
+  }
+  .preview-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Phones (≤480px) ── */
+@media (max-width: 480px) {
+  /* Branding */
+  .navbar-brand {
+    font-size: 1.15rem;
+  }
+  .navbar-brand .brand-icon {
+    font-size: 1.2rem;
+  }
+
+  /* Typography */
+  .birthday-reveal-name { font-size: clamp(2.2rem, 9vw, 3.2rem); }
+  .final-title { font-size: clamp(2rem, 8vw, 2.8rem) !important; }
 
   /* Profile */
-  .profile-avatar { width: 140px; height: 140px; }
+  .profile-avatar { width: 130px; height: 130px; }
+  .profile-chips { flex-wrap: wrap; justify-content: center; }
 
-  /* Letter */
-  .letter-card { padding: 1.5rem 1rem; font-size: 0.95rem; }
+  /* Floating Music Toggle */
+  .music-control {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.15rem;
+  }
 
-  /* Buttons */
-  .btn { padding: 0.75rem 1.5rem; }
-  .btn-lg { padding: 0.875rem 1.75rem; font-size: 0.95rem; }
+  /* Hide step text labels on very narrow screens if needed */
+  .step-text {
+    display: none;
+  }
+  .step-item {
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+  }
 
-  /* Form */
-  .steps-indicator { flex-wrap: nowrap; overflow-x: auto; }
-
-  /* Music control positioning for mobile */
-  .music-control { bottom: 1rem; right: 1rem; width: 48px; height: 48px; }
-
-  /* Final section */
-  .final-balloons { font-size: 2.5rem; }
+  /* Theme cards */
+  .themes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  .theme-preview {
+    height: 48px;
+  }
 }
 
-/* ── Portrait Small (≤360px) ── */
+/* ── Small Phones (≤360px) ── */
 @media (max-width: 360px) {
-  .display-title { font-size: 1.8rem; }
+  .display-title { font-size: 1.6rem; }
   .gallery-grid { grid-template-columns: 1fr; }
   .photo-preview-grid { grid-template-columns: repeat(2, 1fr); }
+  .btn-lg { padding: 0.75rem 1.25rem; font-size: 0.9rem; }
 }
 
-/* ── Touch / hover support ── */
+/* ── Touch Adjustments ── */
 @media (hover: none) {
   .btn:hover { transform: none; }
   .card:hover { transform: none; }
-  .btn-primary:hover { box-shadow: var(--shadow-md); }
 }
