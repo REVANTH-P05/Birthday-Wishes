@@ -1170,23 +1170,28 @@
     document.addEventListener('DOMContentLoaded', () => {
       Animations.createParticles(document.getElementById('welcome-particles'), 25);
 
+      const urlData = BirthdayData.getSharedDataFromUrl();
+      const currentData = urlData || BirthdayData.getCurrent();
+      const hasConfig = BirthdayData.isConfigured(currentData);
+
       // Show/hide profile chips based on data
-      const data = BirthdayData.getCurrent();
       const ageChip = document.getElementById('profile-age-chip');
       const relChip = document.getElementById('profile-relationship-chip');
-      if (ageChip && data.age) {
-        ageChip.textContent = `🎂 ${data.age} Years`;
+      if (ageChip && currentData.age) {
+        ageChip.textContent = `🎂 ${currentData.age} Years`;
+        ageChip.style.display = 'inline-flex';
       } else if (ageChip) {
         ageChip.style.display = 'none';
       }
-      if (relChip && data.relationship) {
-        relChip.textContent = `💝 ${data.relationship}`;
+      if (relChip && currentData.relationship) {
+        relChip.textContent = `💝 ${currentData.relationship}`;
+        relChip.style.display = 'inline-flex';
       } else if (relChip) {
         relChip.style.display = 'none';
       }
 
       // Show profile img or placeholder
-      const profileSrc = Storage.getProfilePhoto();
+      const profileSrc = (urlData && urlData.profileImage) ? urlData.profileImage : Storage.getProfilePhoto();
       const profileImg = document.getElementById('profile-img');
       const profilePlaceholder = document.getElementById('profile-avatar-placeholder');
       if (profileSrc && profileImg) {
@@ -1195,21 +1200,11 @@
         if (profilePlaceholder) profilePlaceholder.style.display = 'none';
       }
 
-      // Redirect to customize if not set up
-      if (!BirthdayData.isConfigured()) {
-        const experienceWrapper = document.getElementById('experience-wrapper');
-        const welcomeScreen = document.getElementById('welcome-screen');
-        // Show helpful CTA overlay
-        const startBtn = document.getElementById('start-surprise-btn');
-        if (startBtn) {
-          startBtn.innerHTML = '✏️ Create Your Birthday First';
-          startBtn.addEventListener('click', () => {
-            window.location.href = 'customize.html';
-          });
-        }
+      // If no birthday configured at all, show friendly prompt subtitle but preserve default demo experience
+      if (!hasConfig && !urlData) {
         const welcomeSubtitle = document.querySelector('.welcome-subtitle');
         if (welcomeSubtitle) {
-          welcomeSubtitle.textContent = 'No birthday has been set up yet. Create one to see the magic! 🎨';
+          welcomeSubtitle.textContent = 'Welcome! Tap below to view the birthday surprise or edit details anytime! 🎂';
         }
       }
     });

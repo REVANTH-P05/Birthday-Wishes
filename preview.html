@@ -591,6 +591,12 @@
       const miniMusic = document.getElementById('mini-music');
       if (miniMusic) miniMusic.textContent = musicSrc ? '🎵 Music loaded' : 'No music';
 
+      // Update preview URL display
+      BirthdayData.getShareUrl().then(url => {
+        const previewUrlEl = document.getElementById('preview-url');
+        if (previewUrlEl) previewUrlEl.textContent = url;
+      });
+
       // ── Copy Link ──
       document.getElementById('preview-copy-link-btn')?.addEventListener('click', async () => {
         const url = await BirthdayData.getShareUrl();

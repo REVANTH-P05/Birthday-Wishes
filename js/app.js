@@ -17,10 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     photos = urlData.photos || [];
     musicSrc = Storage.getMusic(); // optional background music if uploaded
 
-    // Save to storage & mark recipient session so page refresh / back navigation never reverts to empty page
-    BirthdayData.save(data);
-    if (profileSrc) Storage.setProfilePhoto(profileSrc);
-    if (photos && photos.length > 0) Storage.setPhotos(photos);
+    // Mark recipient session
     sessionStorage.setItem('birthday_is_recipient', 'true');
 
     // Clean address bar query string seamlessly
@@ -63,21 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Always init audio so the music button works ──
   BirthdayAudio.init('music-toggle');
 
-  // ── Gate: if not configured (neither via URL nor recipient storage) ──
-  if (!isRecipientMode && !BirthdayData.isConfigured(data)) {
-    const startBtn = document.getElementById('start-surprise-btn');
-    const welcomeSubtitle = document.querySelector('.welcome-subtitle');
-    const welcomeEyebrow = document.querySelector('.welcome-eyebrow');
-    const welcomeEnvelope = document.querySelector('.welcome-envelope');
-    if (welcomeEnvelope) welcomeEnvelope.textContent = '🎨';
-    if (welcomeEyebrow) welcomeEyebrow.textContent = 'No birthday has been created yet…';
-    if (welcomeSubtitle) welcomeSubtitle.textContent = 'Set up a birthday experience first, then share the link!';
-    if (startBtn) {
-      startBtn.innerHTML = '<span class="start-btn-icon">✏️</span> Create Birthday';
-      startBtn.addEventListener('click', () => { window.location.href = 'customize.html'; });
-    }
-    Animations.initCustomCursor();
-    return;
+  // ── Gate: if not configured, populate fallback default card data so recipient experience always works ──
+  if (!BirthdayData.isConfigured(data)) {
+    data = {
+      ...BirthdayData.getDefault(),
+      name: data.name || 'Friend',
+      birthdayMessage: data.birthdayMessage || 'Happy Birthday! Wishing you a magical day filled with joy, laughter, and beautiful memories! 🎂✨'
+    };
   }
 
   // ── Populate Dynamic Content ──

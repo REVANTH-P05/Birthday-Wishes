@@ -452,7 +452,12 @@ const BirthdayData = (() => {
     },
 
     isConfigured(data) {
-      return !!(data && data.name && data.name.trim().length > 0 && data.birthday);
+      const target = data || this.getCurrent();
+      return !!(target && (
+        (target.name && target.name.trim().length > 0) ||
+        (target.birthdayMessage && target.birthdayMessage.trim().length > 0) ||
+        target.birthday
+      ));
     },
 
     // ── URL Payload Encoding for Sharing (LZ-String Compressed with Base64 Fallback) ──
@@ -624,23 +629,14 @@ const BirthdayData = (() => {
       const rawSlug = customSlug || currentData.relationship || currentData.name || 'surprise';
       const cleanSlug = rawSlug.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'surprise';
 
-      const isFile = window.location.protocol === 'file:';
-      let longUrl = '';
-
-      if (isFile) {
-        let href = window.location.href.split('#')[0].split('?')[0];
-        if (/(customize|preview)\.html$/i.test(href)) {
-          href = href.replace(/(customize|preview)\.html$/i, 'index.html');
-        } else if (!/index\.html$/i.test(href)) {
-          href = href.replace(/\/$/, '') + '/index.html';
-        }
-        longUrl = `${href}?to=${cleanSlug}&card=${encoded}#${encoded}`;
-      } else {
-        const origin = window.location.origin;
-        longUrl = `${origin}/${cleanSlug}?card=${encoded}#${encoded}`;
+      let baseUrl = window.location.href.split('#')[0].split('?')[0];
+      if (/(customize|preview)\.html$/i.test(baseUrl)) {
+        baseUrl = baseUrl.replace(/(customize|preview)\.html$/i, 'index.html');
+      } else if (!/index\.html$/i.test(baseUrl)) {
+        baseUrl = baseUrl.replace(/\/$/, '') + '/index.html';
       }
 
-      return longUrl;
+      return `${baseUrl}?to=${cleanSlug}&card=${encodeURIComponent(encoded)}`;
     },
 
     getSharedDataFromUrl() {
@@ -659,7 +655,7 @@ const BirthdayData = (() => {
         // 2. Check Location Hash (#card=... or #z_...)
         if (!cardParam && window.location.hash) {
           const hash = window.location.hash.replace(/^#/, '');
-          if (hash.startsWith('z_') || hash.length > 10) {
+          if (hash.startsWith('z_') || hash.startsWith('{') || hash.length > 10) {
             cardParam = hash;
           } else {
             const hashParams = new URLSearchParams(hash);
@@ -669,7 +665,7 @@ const BirthdayData = (() => {
 
         if (cardParam && cardParam !== 'null' && cardParam !== 'undefined') {
           const decoded = this.decodeShareData(cardParam);
-          if (decoded && decoded.name) {
+          if (decoded && (decoded.name || decoded.birthdayMessage)) {
             return decoded;
           }
         }
