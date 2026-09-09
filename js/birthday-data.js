@@ -636,30 +636,36 @@ const BirthdayData = (() => {
         baseUrl = baseUrl.replace(/\/$/, '') + '/index.html';
       }
 
-      return `${baseUrl}?to=${cleanSlug}&card=${encodeURIComponent(encoded)}`;
+      return `${baseUrl}?to=${cleanSlug}#card=${encodeURIComponent(encoded)}`;
     },
 
     getSharedDataFromUrl() {
       try {
-        // 1. Check Search Parameters (?card=...)
-        const urlParams = new URLSearchParams(window.location.search);
-        let cardParam = urlParams.get('card') || urlParams.get('greeting') || urlParams.get('d') || urlParams.get('c');
+        let cardParam = null;
 
-        if (!cardParam && window.location.search) {
-          const match = window.location.search.match(/[?&](card|greeting|d|c)=([^&]+)/i);
-          if (match && match[2]) {
-            cardParam = decodeURIComponent(match[2]);
-          }
-        }
-
-        // 2. Check Location Hash (#card=... or #z_...)
-        if (!cardParam && window.location.hash) {
+        // 1. Check Location Hash (#card=... or #z_...) - PREFERRED to avoid 414 URI_TOO_LONG server errors
+        if (window.location.hash) {
           const hash = window.location.hash.replace(/^#/, '');
-          if (hash.startsWith('z_') || hash.startsWith('{') || hash.length > 10) {
-            cardParam = hash;
+          if (hash.startsWith('card=')) {
+            cardParam = decodeURIComponent(hash.slice(5));
+          } else if (hash.startsWith('z_') || hash.startsWith('{') || hash.length > 10) {
+            cardParam = decodeURIComponent(hash);
           } else {
             const hashParams = new URLSearchParams(hash);
             cardParam = hashParams.get('card') || hashParams.get('greeting') || hashParams.get('d') || hashParams.get('c');
+          }
+        }
+
+        // 2. Check Search Parameters (?card=...) as secondary fallback
+        if (!cardParam) {
+          const urlParams = new URLSearchParams(window.location.search);
+          cardParam = urlParams.get('card') || urlParams.get('greeting') || urlParams.get('d') || urlParams.get('c');
+
+          if (!cardParam && window.location.search) {
+            const match = window.location.search.match(/[?&](card|greeting|d|c)=([^&]+)/i);
+            if (match && match[2]) {
+              cardParam = decodeURIComponent(match[2]);
+            }
           }
         }
 
