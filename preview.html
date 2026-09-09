@@ -593,10 +593,10 @@
 
       // ── Copy Link ──
       document.getElementById('preview-copy-link-btn')?.addEventListener('click', async () => {
-        const url = window.location.origin + window.location.pathname.replace('preview.html', 'index.html');
+        const url = BirthdayData.getShareUrl();
         try {
           await navigator.clipboard.writeText(url);
-          Validation.showToast('Link copied to clipboard! 📋', 'success');
+          Validation.showToast('Greeting Link copied to clipboard! 📋 Share it with them!', 'success');
         } catch {
           Validation.showToast('Please copy the page URL manually.', 'info');
         }

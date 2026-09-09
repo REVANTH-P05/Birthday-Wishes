@@ -1,33 +1,55 @@
 /**
  * BirthdayVerse – Birthday Experience App (index.html)
- * Receiver-only view: no editing controls shown.
- * Includes: welcome → reveal → gallery → letter → special → finale
- * Mini-game: Balloon Pop
+ * Main experience view for receivers and creators.
+ * When opened via a shared greeting link (?card=...), EDIT CONTROLS ARE COMPLETED DISABLED AND REMOVED.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  const data = BirthdayData.getCurrent();
-  const profileSrc = Storage.getProfilePhoto();
-  const photos = Storage.getPhotos();
-  const musicSrc = Storage.getMusic();
+  const urlData = BirthdayData.getSharedDataFromUrl();
+  const isSharedLink = !!urlData;
+
+  let data, profileSrc, photos, musicSrc;
+
+  if (isSharedLink) {
+    // ── RECIPIENT MODE: Read data directly from URL payload ──
+    data = urlData;
+    profileSrc = urlData.profileImage || null;
+    photos = urlData.photos || [];
+    musicSrc = Storage.getMusic(); // optional background music if uploaded
+  } else {
+    // ── CREATOR / LOCAL MODE: Read from localStorage ──
+    data = BirthdayData.getCurrent();
+    profileSrc = Storage.getProfilePhoto();
+    photos = Storage.getPhotos();
+    musicSrc = Storage.getMusic();
+  }
 
   // ── Apply theme ──
   document.documentElement.setAttribute('data-theme', data.theme || 'cute');
 
-  // ── RECEIVER MODE: Hide all editing controls ──
-  // Remove the Edit FAB
-  document.querySelector('.fab-edit')?.remove();
-  // Remove navbar customize/preview links
-  document.querySelectorAll('.navbar-links a[href="customize.html"], .navbar-links a[href="preview.html"]').forEach(el => el.closest('li')?.remove());
-  // Remove navbar actions (Edit buttons)
-  const navActions = document.querySelector('.navbar-actions');
-  if (navActions) navActions.innerHTML = '';
+  // ── RECEIVER PROTECTION: Hide/remove ALL editing options when opening a shared link ──
+  if (isSharedLink) {
+    // Remove the Edit FAB if present
+    document.querySelectorAll('.fab-edit').forEach(el => el.remove());
+    // Remove navbar customize/preview links
+    document.querySelectorAll('.navbar-links a[href="customize.html"], .navbar-links a[href="preview.html"]').forEach(el => el.closest('li')?.remove());
+    // Remove navbar action buttons (Edit buttons)
+    const navActions = document.querySelector('.navbar-actions');
+    if (navActions) {
+      // Keep only music toggle inside navbar actions
+      const musicBtn = document.getElementById('music-toggle');
+      navActions.innerHTML = '';
+      if (musicBtn) navActions.appendChild(musicBtn);
+    }
+    // Remove the "Edit Birthday" button in the final section
+    document.querySelectorAll('a[href="customize.html"]').forEach(el => el.remove());
+  }
 
-  // ── Always init audio so the toggle button works ──
+  // ── Always init audio so the music button works ──
   BirthdayAudio.init('music-toggle');
 
-  // ── Gate: if not configured, show setup prompt ──
-  if (!BirthdayData.isConfigured()) {
+  // ── Gate: if not configured (neither via URL nor localStorage) ──
+  if (!isSharedLink && !BirthdayData.isConfigured(data)) {
     const startBtn = document.getElementById('start-surprise-btn');
     const welcomeSubtitle = document.querySelector('.welcome-subtitle');
     const welcomeEyebrow = document.querySelector('.welcome-eyebrow');
@@ -40,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
       startBtn.addEventListener('click', () => { window.location.href = 'customize.html'; });
     }
     Animations.initCustomCursor();
-    return; // stop here – don't populate or wire anything else
+    return;
   }
 
   // ── Populate Dynamic Content ──
@@ -56,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setText('birthday-name', data.name, 'You');
   setText('profile-name', data.name);
+
   // Profile chips
   const ageChip = document.getElementById('profile-age-chip');
   const relChip = document.getElementById('profile-relationship-chip');
@@ -90,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `).join('');
     } else {
-      // Hide the special section entirely if no reasons
       document.getElementById('special-section')?.classList.add('hidden');
     }
   }
@@ -214,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('game-canvas');
     if (!canvas) return;
 
-    // Responsive canvas sizing
     const container = canvas.parentElement;
     canvas.width = Math.min(container.offsetWidth || 600, 700);
     canvas.height = 420;
@@ -227,13 +248,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let score = 0, lives = 3, timeLeft = 45, gameActive = true;
     const balloons = [];
 
-    // Balloon color pools per theme
     const balloonColors = [
       '#ff6b9d', '#ff8fab', '#c084fc', '#f472b6',
       '#fb923c', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa'
     ];
 
-    // Track which are popping (animation)
     class Balloon {
       constructor() {
         this.reset(true);
@@ -256,10 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Spawn initial balloons
     for (let i = 0; i < 6; i++) balloons.push(new Balloon());
 
-    // Spawn interval
     const spawnInterval = setInterval(() => {
       if (!gameActive) return;
       if (balloons.filter(b => !b.popping).length < 9) {
@@ -267,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, 1200);
 
-    // Timer countdown
     const timerInterval = setInterval(() => {
       if (!gameActive) return;
       timeLeft--;
@@ -277,7 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function drawBalloon(b) {
       if (b.popping) {
-        // Pop burst animation
         const prog = b.popProgress;
         const count = 8;
         ctx.save();
@@ -296,13 +311,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Sway
       const swayX = Math.sin(b.sway) * 12;
 
       ctx.save();
       ctx.translate(b.x + swayX, b.y);
 
-      // String
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(0,0,0,0.2)';
       ctx.lineWidth = 1.5;
@@ -310,7 +323,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.quadraticCurveTo(6, b.r + 20, 0, b.r + 35);
       ctx.stroke();
 
-      // Balloon body
       ctx.beginPath();
       const grad = ctx.createRadialGradient(-b.r * 0.3, -b.r * 0.3, b.r * 0.1, 0, 0, b.r);
       grad.addColorStop(0, '#ffffff88');
@@ -323,19 +335,16 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Shine
       ctx.beginPath();
       ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.ellipse(-b.r * 0.3, -b.r * 0.3, b.r * 0.22, b.r * 0.15, -0.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Knot
       ctx.beginPath();
       ctx.fillStyle = b.color;
       ctx.ellipse(0, b.r * 1.05, 5, 7, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Emoji
       if (b.emoji) {
         ctx.font = `${b.r * 0.9}px serif`;
         ctx.textAlign = 'center';
@@ -349,14 +358,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameLoop() {
       if (!gameActive) return;
 
-      // Background
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      balloons.forEach((b, idx) => {
+      balloons.forEach((b) => {
         if (!b.popping) {
           b.sway += b.swaySpeed;
           b.y -= b.speed;
-          // Missed – lost a life
           if (b.y + b.r < 0) {
             lives = Math.max(0, lives - 1);
             if (livesEl) livesEl.textContent = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
@@ -376,7 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
       requestAnimationFrame(gameLoop);
     }
 
-    // Click / tap to pop
     function onPop(e) {
       if (!gameActive) return;
       const rect = canvas.getBoundingClientRect();
@@ -387,7 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const mx = (clientX - rect.left) * scaleX;
       const my = (clientY - rect.top) * scaleY;
 
-      let hit = false;
       for (const b of balloons) {
         if (b.popping) continue;
         const dx = mx - (b.x + Math.sin(b.sway) * 12);
@@ -398,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
           score++;
           if (scoreEl) scoreEl.textContent = score;
           Animations.createSparkle(clientX, clientY);
-          hit = true;
           break;
         }
       }
@@ -412,7 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
       clearInterval(spawnInterval);
       clearInterval(timerInterval);
 
-      // Show result overlay
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'rgba(20,20,40,0.85)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -420,17 +423,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
-      // Trophy
       ctx.font = '4rem serif';
       ctx.textAlign = 'center';
       ctx.fillText('🏆', cx, cy - 70);
 
-      // Score text
       ctx.fillStyle = '#fff';
       ctx.font = `bold ${Math.min(28, canvas.width / 18)}px sans-serif`;
       ctx.fillText(`You popped ${score} balloon${score !== 1 ? 's' : ''}! 🎈`, cx, cy - 10);
 
-      // Rating
       const rating = score >= 30 ? '🌟 LEGENDARY!' : score >= 20 ? '🔥 Amazing!' : score >= 12 ? '✨ Great job!' : score >= 6 ? '👏 Nice try!' : '😊 Keep popping!';
       ctx.font = `${Math.min(22, canvas.width / 22)}px sans-serif`;
       ctx.fillStyle = '#ffd700';
@@ -440,16 +440,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.font = `${Math.min(16, canvas.width / 32)}px sans-serif`;
       ctx.fillText('Click "Play Again" to try once more!', cx, cy + 65);
 
-      // Show replay button
       const replayBtn = document.getElementById('game-replay-btn');
       if (replayBtn) replayBtn.classList.remove('hidden');
       document.getElementById('game-stop-btn')?.classList.add('hidden');
     }
 
-    // Stop button
     document.getElementById('game-stop-btn')?.addEventListener('click', endGame);
 
-    // Replay button
     document.getElementById('game-replay-btn')?.addEventListener('click', () => {
       score = 0; lives = 3; timeLeft = 45; gameActive = true;
       if (scoreEl) scoreEl.textContent = '0';
@@ -460,7 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('game-replay-btn')?.classList.add('hidden');
       document.getElementById('game-stop-btn')?.classList.remove('hidden');
       gameLoop();
-      // Restart intervals
       const si = setInterval(() => {
         if (!gameActive) { clearInterval(si); return; }
         if (balloons.filter(b => !b.popping).length < 9) balloons.push(new Balloon());
@@ -473,7 +469,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
     });
 
-    // Initial lives display
     if (livesEl) livesEl.textContent = '❤️❤️❤️';
     if (timerEl) timerEl.textContent = timeLeft;
 
@@ -486,23 +481,23 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => Animations.launchConfetti(4000), 100);
   });
 
-  // ── Share ──
+  // ── Share Button (Generates full encoded greeting URL) ──
   document.getElementById('share-btn')?.addEventListener('click', async () => {
-    const shareUrl = window.location.href;
+    const shareUrl = BirthdayData.getShareUrl();
     if (navigator.share) {
       try {
         await navigator.share({
           title: `Happy Birthday, ${data.name || 'You'}! 🎂`,
-          text: `A special birthday experience just for you! 🎉`,
+          text: `A special birthday surprise just for you! 🎉`,
           url: shareUrl
         });
       } catch {}
     } else {
       try {
         await navigator.clipboard.writeText(shareUrl);
-        Validation.showToast('Link copied! 📋 Share it with them!', 'success');
+        Validation.showToast('Greeting Link copied to clipboard! 📋 Share it with them!', 'success');
       } catch {
-        Validation.showToast('Copy this page URL to share!', 'info');
+        Validation.showToast('Copy this URL to share your greeting!', 'info');
       }
     }
   });

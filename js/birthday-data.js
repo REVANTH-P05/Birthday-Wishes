@@ -1,13 +1,11 @@
 /**
  * BirthdayVerse – Birthday Data Module
- * Manages birthday configuration and default data structure.
+ * Manages birthday configuration, URL payload encoding for sharing, and default data structure.
  */
 
 const BirthdayData = (() => {
   const STORAGE_KEY = 'birthdayverse_config';
 
-  // No pre-filled content – everything starts EMPTY.
-  // A real save() call is required before the experience shows real data.
   const defaultData = {
     name: '',
     age: '',
@@ -38,7 +36,6 @@ const BirthdayData = (() => {
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          // Only merge stored keys – don't fill in empty defaults from stored nulls
           return { ...this.getDefault(), ...parsed };
         } catch (e) {
           console.warn('Failed to parse stored birthday data, using defaults.');
@@ -59,21 +56,103 @@ const BirthdayData = (() => {
       localStorage.removeItem(STORAGE_KEY);
     },
 
-    // A birthday is "configured" if the sender has saved a name AND birthday date AND message.
-    // This prevents the experience from opening with just default/empty values.
-    isConfigured() {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return false;
+    isConfigured(customData = null) {
+      const target = customData || this.getCurrent();
+      return (
+        target &&
+        typeof target.name === 'string' && target.name.trim().length > 0 &&
+        typeof target.birthdayMessage === 'string' && target.birthdayMessage.trim().length > 0
+      );
+    },
+
+    // ── URL Payload Encoding for Sharing ──
+    encodeShareData(data, profilePhoto = null, photos = []) {
+      const payload = {
+        n: data.name || '',
+        a: data.age || '',
+        r: data.relationship || '',
+        b: data.birthday || '',
+        bm: data.birthdayMessage || '',
+        pm: data.personalMessage || '',
+        sr: data.specialReasons || [],
+        fm: data.finalMessage || '',
+        t: data.theme || 'cute',
+        cd: data.showCountdown === true,
+        mg: data.showMiniGame === true,
+        cf: data.showConfetti !== false,
+        bl: data.showBalloons !== false,
+        ht: data.showHearts !== false,
+        p: profilePhoto || null,
+        ph: (photos || []).map(p => ({ s: p.src, c: p.caption || '' }))
+      };
       try {
-        const parsed = JSON.parse(stored);
-        return (
-          parsed.name && parsed.name.trim().length > 0 &&
-          parsed.birthday && parsed.birthday.trim().length > 0 &&
-          parsed.birthdayMessage && parsed.birthdayMessage.trim().length > 0
-        );
-      } catch {
-        return false;
+        const json = JSON.stringify(payload);
+        // Safe UTF-8 Base64 encoding
+        return btoa(encodeURIComponent(json));
+      } catch (e) {
+        console.error('Error encoding share payload:', e);
+        return null;
       }
+    },
+
+    decodeShareData(encodedStr) {
+      if (!encodedStr) return null;
+      try {
+        const json = decodeURIComponent(atob(encodedStr));
+        const p = JSON.parse(json);
+        return {
+          name: p.n || '',
+          age: p.a || '',
+          relationship: p.r || '',
+          birthday: p.b || '',
+          birthdayMessage: p.bm || '',
+          personalMessage: p.pm || '',
+          specialReasons: p.sr || [],
+          finalMessage: p.fm || '',
+          theme: p.t || 'cute',
+          showCountdown: p.cd === true,
+          showMiniGame: p.mg === true,
+          showConfetti: p.cf !== false,
+          showBalloons: p.bl !== false,
+          showHearts: p.ht !== false,
+          profileImage: p.p || null,
+          photos: (p.ph || []).map(item => ({ src: item.s, caption: item.c }))
+        };
+      } catch (e) {
+        console.warn('Failed to decode URL share payload:', e);
+        return null;
+      }
+    },
+
+    getShareUrl() {
+      const currentData = this.getCurrent();
+      const profile = (typeof Storage !== 'undefined') ? Storage.getProfilePhoto() : null;
+      const photos = (typeof Storage !== 'undefined') ? Storage.getPhotos() : [];
+
+      // Try full encoding with photos
+      let encoded = this.encodeShareData(currentData, profile, photos);
+
+      // If payload is over 6KB (for URL safety across all browsers), strip photos
+      if (encoded && encoded.length > 6000) {
+        encoded = this.encodeShareData(currentData, null, []);
+      }
+
+      const path = window.location.pathname.replace(/(customize|preview)\.html$/, 'index.html');
+      const origin = window.location.origin;
+      return `${origin}${path}?card=${encoded}`;
+    },
+
+    getSharedDataFromUrl() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cardParam = urlParams.get('card') || urlParams.get('greeting') || urlParams.get('d');
+        if (cardParam) {
+          return this.decodeShareData(cardParam);
+        }
+      } catch (e) {
+        console.warn('Error reading URL parameters:', e);
+      }
+      return null;
     },
 
     validate(data) {
