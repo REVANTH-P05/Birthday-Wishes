@@ -207,14 +207,6 @@ const BirthdayData = (() => {
         longUrl = `${origin}/${cleanSlug}?card=${encoded}#${encoded}`;
       }
 
-      // Safely shorten if under API limit
-      if (longUrl.length < 4000) {
-        try {
-          const shortUrl = await this.getShortenedUrl(longUrl);
-          if (shortUrl) return shortUrl;
-        } catch (e) {}
-      }
-
       return longUrl;
     },
 

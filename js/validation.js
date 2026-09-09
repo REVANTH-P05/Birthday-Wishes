@@ -254,11 +254,8 @@ const Validation = (() => {
           </button>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
-          <span id="share-link-badge" class="form-hint" style="font-size:0.78rem;">Clean Custom URL (${currentUrl.length} chars)</span>
-          <button id="share-modal-shorten-btn" class="btn btn-outline btn-sm" style="font-size:0.78rem; padding:0.3rem 0.8rem;">
-            ⚡ Shorten Link
-          </button>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+          <span id="share-link-badge" class="form-hint" style="font-size:0.78rem; color:var(--color-primary);">Full Encoded Greeting Payload (100% Reliable across all devices)</span>
         </div>
 
         <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:1rem;">
@@ -282,22 +279,7 @@ const Validation = (() => {
     const closeBtn = overlay.querySelector('#share-modal-close');
     const doneBtn = overlay.querySelector('#share-modal-done');
     const copyBtn = overlay.querySelector('#share-modal-copy-btn');
-    const shortenBtn = overlay.querySelector('#share-modal-shorten-btn');
     const inputEl = overlay.querySelector('#share-modal-input');
-    const badgeEl = overlay.querySelector('#share-link-badge');
-    const waEl = overlay.querySelector('#share-wa-link');
-    const tgEl = overlay.querySelector('#share-tg-link');
-    const testEl = overlay.querySelector('#share-test-link');
-
-    const updateUrlDisplay = (newUrl, isShort = false) => {
-      currentUrl = newUrl;
-      inputEl.value = newUrl;
-      badgeEl.textContent = isShort ? `✨ Shortened Link (${newUrl.length} chars)` : `Clean URL (${newUrl.length} chars)`;
-      const newLinks = buildShareLinks(newUrl);
-      waEl.href = newLinks.wa;
-      tgEl.href = newLinks.tg;
-      testEl.href = newUrl;
-    };
 
     const closeModal = () => overlay.classList.remove('open');
 
@@ -325,36 +307,6 @@ const Validation = (() => {
         showToast('Press Ctrl+C to copy the link!', 'info');
       }
     });
-
-    shortenBtn?.addEventListener('click', async () => {
-      shortenBtn.textContent = '⏳ Shortening...';
-      shortenBtn.disabled = true;
-      if (typeof BirthdayData !== 'undefined' && BirthdayData.getShortenedUrl) {
-        const short = await BirthdayData.getShortenedUrl(currentUrl);
-        if (short) {
-          updateUrlDisplay(short, true);
-          shortenBtn.textContent = '⚡ Shortened!';
-          showToast('Link shortened successfully! 🚀', 'success');
-        } else {
-          shortenBtn.textContent = '⚡ Shorten Link';
-          shortenBtn.disabled = false;
-          showToast('Shortener API unavailable. Compact link copied!', 'info');
-        }
-      }
-    });
-
-    // Auto-shorten attempt
-    if (typeof BirthdayData !== 'undefined' && BirthdayData.getShortenedUrl) {
-      BirthdayData.getShortenedUrl(shareUrl).then(short => {
-        if (short) {
-          updateUrlDisplay(short, true);
-          if (shortenBtn) {
-            shortenBtn.textContent = '⚡ Shortened!';
-            shortenBtn.disabled = true;
-          }
-        }
-      }).catch(() => {});
-    }
 
     overlay.classList.add('open');
     setTimeout(() => inputEl?.select(), 200);
