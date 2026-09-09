@@ -65,7 +65,7 @@ const BirthdayData = (() => {
       );
     },
 
-    // ── URL Payload Encoding for Sharing ──
+    // ── URL Payload Encoding for Sharing (LZ-String Compressed) ──
     encodeShareData(data, profilePhoto = null, photos = []) {
       const formatImg = (src) => {
         if (!src || typeof src !== 'string') return null;
@@ -95,8 +95,8 @@ const BirthdayData = (() => {
       };
       try {
         const json = JSON.stringify(payload);
-        const rawB64 = btoa(encodeURIComponent(json));
-        return encodeURIComponent(rawB64);
+        const compressed = LZString.compressToEncodedURIComponent(json);
+        return 'z_' + compressed;
       } catch (e) {
         console.error('Error encoding share payload:', e);
         return null;
@@ -106,9 +106,17 @@ const BirthdayData = (() => {
     decodeShareData(encodedStr) {
       if (!encodedStr) return null;
       try {
-        let cleaned = decodeURIComponent(encodedStr);
-        cleaned = cleaned.replace(/ /g, '+');
-        const json = decodeURIComponent(atob(cleaned));
+        let json = null;
+        if (encodedStr.startsWith('z_')) {
+          const raw = encodedStr.slice(2);
+          json = LZString.decompressFromEncodedURIComponent(raw);
+        } else {
+          let cleaned = decodeURIComponent(encodedStr);
+          cleaned = cleaned.replace(/ /g, '+');
+          json = decodeURIComponent(atob(cleaned));
+        }
+
+        if (!json) return null;
         const p = JSON.parse(json);
 
         const restoreImg = (str) => {
@@ -151,7 +159,7 @@ const BirthdayData = (() => {
 
       let compressedProfile = null;
       if (rawProfile && typeof Storage !== 'undefined' && Storage.compressDataUrl) {
-        compressedProfile = await Storage.compressDataUrl(rawProfile, 300, 0.65);
+        compressedProfile = await Storage.compressDataUrl(rawProfile, 250, 0.55);
       } else {
         compressedProfile = rawProfile;
       }
@@ -160,7 +168,7 @@ const BirthdayData = (() => {
       if (rawPhotos.length > 0 && typeof Storage !== 'undefined' && Storage.compressDataUrl) {
         compressedPhotos = await Promise.all(
           rawPhotos.map(async (p) => ({
-            src: await Storage.compressDataUrl(p.src, 500, 0.65),
+            src: await Storage.compressDataUrl(p.src, 400, 0.55),
             caption: p.caption || ''
           }))
         );
@@ -180,15 +188,37 @@ const BirthdayData = (() => {
         encoded = this.encodeShareData(currentData, null, []);
       }
 
-      const path = window.location.pathname.replace(/(customize|preview)\.html$/, 'index.html');
-      const origin = window.location.origin;
-      return `${origin}${path}?card=${encoded}`;
+      let href = window.location.href.split('#')[0].split('?')[0];
+      if (/(customize|preview)\.html$/i.test(href)) {
+        href = href.replace(/(customize|preview)\.html$/i, 'index.html');
+      } else if (!/index\.html$/i.test(href)) {
+        href = href.replace(/\/$/, '') + '/index.html';
+      }
+
+      return `${href}?card=${encoded}`;
+    },
+
+    async getShortenedUrl(longUrl) {
+      if (!longUrl || typeof longUrl !== 'string') return null;
+      try {
+        const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`;
+        const res = await fetch(apiUrl);
+        if (res.ok) {
+          const shortUrl = await res.text();
+          if (shortUrl && shortUrl.startsWith('http')) {
+            return shortUrl.trim();
+          }
+        }
+      } catch (e) {
+        console.warn('Shortener API error:', e);
+      }
+      return null;
     },
 
     getSharedDataFromUrl() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        const cardParam = urlParams.get('card') || urlParams.get('greeting') || urlParams.get('d');
+        const cardParam = urlParams.get('card') || urlParams.get('greeting') || urlParams.get('d') || urlParams.get('c');
         if (cardParam) {
           return this.decodeShareData(cardParam);
         }

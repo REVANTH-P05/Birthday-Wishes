@@ -225,35 +225,50 @@ const Validation = (() => {
       document.body.appendChild(overlay);
     }
 
-    const waText = encodeURIComponent(`A special birthday surprise just for you! 🎉\n${shareUrl}`);
-    const waUrl = `https://api.whatsapp.com/send?text=${waText}`;
-    const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent('A special birthday surprise just for you! 🎉')}`;
+    let currentUrl = shareUrl;
+
+    const buildShareLinks = (url) => {
+      const waText = encodeURIComponent(`A special birthday surprise just for you! 🎉\n${url}`);
+      return {
+        wa: `https://api.whatsapp.com/send?text=${waText}`,
+        tg: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent('A special birthday surprise just for you! 🎉')}`
+      };
+    };
+
+    const links = buildShareLinks(currentUrl);
 
     overlay.innerHTML = `
-      <div class="modal-box" style="max-width:540px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <div class="modal-box" style="max-width:560px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
           <h3 class="section-title" style="font-size:1.4rem; margin:0;">💌 Share Greeting Link</h3>
           <button id="share-modal-close" class="btn btn-ghost btn-sm" aria-label="Close" style="border-radius:50%; width:32px; height:32px; padding:0;">✕</button>
         </div>
-        <p class="body-text" style="font-size:0.92rem; margin-bottom:1.25rem; opacity:0.8;">
-          Copy this magical link and send it to <strong>${recipientName || 'the birthday person'}</strong>. They can open it on any device to view their surprise!
+        <p class="body-text" style="font-size:0.9rem; margin-bottom:1rem; opacity:0.8;">
+          Copy this link and send it to <strong>${recipientName || 'the birthday person'}</strong>!
         </p>
 
-        <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem;">
-          <input id="share-modal-input" type="text" class="form-input" value="${shareUrl}" readonly style="font-size:0.85rem; font-family:monospace; background:var(--color-surface-2);" onclick="this.select();">
+        <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+          <input id="share-modal-input" type="text" class="form-input" value="${currentUrl}" readonly style="font-size:0.83rem; font-family:monospace; background:var(--color-surface-2);" onclick="this.select();">
           <button id="share-modal-copy-btn" class="btn btn-primary" style="flex-shrink:0;">
             📋 Copy
           </button>
         </div>
 
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+          <span id="share-link-badge" class="form-hint" style="font-size:0.78rem;">Compact Link (${currentUrl.length} chars)</span>
+          <button id="share-modal-shorten-btn" class="btn btn-outline btn-sm" style="font-size:0.78rem; padding:0.3rem 0.8rem;">
+            ⚡ Shorten Link
+          </button>
+        </div>
+
         <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:1rem;">
-          <a href="${waUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="border-color:#25D366; color:#25D366; flex:1;">
+          <a id="share-wa-link" href="${links.wa}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="border-color:#25D366; color:#25D366; flex:1;">
             💬 WhatsApp
           </a>
-          <a href="${tgUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="border-color:#0088cc; color:#0088cc; flex:1;">
+          <a id="share-tg-link" href="${links.tg}" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="border-color:#0088cc; color:#0088cc; flex:1;">
             ✈️ Telegram
           </a>
-          <a href="${shareUrl}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="flex:1;">
+          <a id="share-test-link" href="${currentUrl}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="flex:1;">
             👁️ Test Link
           </a>
         </div>
@@ -267,7 +282,22 @@ const Validation = (() => {
     const closeBtn = overlay.querySelector('#share-modal-close');
     const doneBtn = overlay.querySelector('#share-modal-done');
     const copyBtn = overlay.querySelector('#share-modal-copy-btn');
+    const shortenBtn = overlay.querySelector('#share-modal-shorten-btn');
     const inputEl = overlay.querySelector('#share-modal-input');
+    const badgeEl = overlay.querySelector('#share-link-badge');
+    const waEl = overlay.querySelector('#share-wa-link');
+    const tgEl = overlay.querySelector('#share-tg-link');
+    const testEl = overlay.querySelector('#share-test-link');
+
+    const updateUrlDisplay = (newUrl, isShort = false) => {
+      currentUrl = newUrl;
+      inputEl.value = newUrl;
+      badgeEl.textContent = isShort ? `✨ Shortened Link (${newUrl.length} chars)` : `Compact Link (${newUrl.length} chars)`;
+      const newLinks = buildShareLinks(newUrl);
+      waEl.href = newLinks.wa;
+      tgEl.href = newLinks.tg;
+      testEl.href = newUrl;
+    };
 
     const closeModal = () => overlay.classList.remove('open');
 
@@ -279,11 +309,11 @@ const Validation = (() => {
     });
 
     copyBtn?.addEventListener('click', async () => {
-      const ok = await copyToClipboard(shareUrl);
+      const ok = await copyToClipboard(currentUrl);
       if (ok) {
         copyBtn.textContent = '✅ Copied!';
         copyBtn.style.background = '#10b981';
-        showToast('Greeting Link copied to clipboard! 📋 Share it with them!', 'success');
+        showToast('Link copied to clipboard! 📋 Share it with them!', 'success');
         setTimeout(() => {
           if (copyBtn) {
             copyBtn.textContent = '📋 Copy';
@@ -295,6 +325,36 @@ const Validation = (() => {
         showToast('Press Ctrl+C to copy the link!', 'info');
       }
     });
+
+    shortenBtn?.addEventListener('click', async () => {
+      shortenBtn.textContent = '⏳ Shortening...';
+      shortenBtn.disabled = true;
+      if (typeof BirthdayData !== 'undefined' && BirthdayData.getShortenedUrl) {
+        const short = await BirthdayData.getShortenedUrl(shareUrl);
+        if (short) {
+          updateUrlDisplay(short, true);
+          shortenBtn.textContent = '⚡ Shortened!';
+          showToast('Link shortened successfully! 🚀', 'success');
+        } else {
+          shortenBtn.textContent = '⚡ Shorten Link';
+          shortenBtn.disabled = false;
+          showToast('Shortener API unavailable. Compact link copied!', 'info');
+        }
+      }
+    });
+
+    // Auto-shorten attempt if reachable
+    if (typeof BirthdayData !== 'undefined' && BirthdayData.getShortenedUrl) {
+      BirthdayData.getShortenedUrl(shareUrl).then(short => {
+        if (short) {
+          updateUrlDisplay(short, true);
+          if (shortenBtn) {
+            shortenBtn.textContent = '⚡ Shortened!';
+            shortenBtn.disabled = true;
+          }
+        }
+      }).catch(() => {});
+    }
 
     overlay.classList.add('open');
     setTimeout(() => inputEl?.select(), 200);
