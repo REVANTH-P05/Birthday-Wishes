@@ -188,7 +188,7 @@ const BirthdayData = (() => {
         encoded = this.encodeShareData(currentData, null, []);
       }
 
-      const rawSlug = customSlug || currentData.relationship || currentData.name || 'person';
+      const rawSlug = customSlug || currentData.relationship || currentData.name || 'surprise';
       const cleanSlug = rawSlug.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'surprise';
 
       const isFile = window.location.protocol === 'file:';
@@ -201,17 +201,19 @@ const BirthdayData = (() => {
         } else if (!/index\.html$/i.test(href)) {
           href = href.replace(/\/$/, '') + '/index.html';
         }
-        longUrl = `${href}?to=${cleanSlug}&card=${encoded}`;
+        longUrl = `${href}?to=${cleanSlug}&card=${encoded}#${encoded}`;
       } else {
         const origin = window.location.origin;
-        longUrl = `${origin}/${cleanSlug}?card=${encoded}`;
+        longUrl = `${origin}/${cleanSlug}?card=${encoded}#${encoded}`;
       }
 
-      // Auto-shorten link to guarantee a minimal share link
-      try {
-        const shortUrl = await this.getShortenedUrl(longUrl);
-        if (shortUrl) return shortUrl;
-      } catch (e) {}
+      // Safely shorten if under API limit
+      if (longUrl.length < 4000) {
+        try {
+          const shortUrl = await this.getShortenedUrl(longUrl);
+          if (shortUrl) return shortUrl;
+        } catch (e) {}
+      }
 
       return longUrl;
     },
@@ -235,40 +237,26 @@ const BirthdayData = (() => {
 
     getSharedDataFromUrl() {
       try {
+        // 1. Check Search Parameters (?card=...)
         const urlParams = new URLSearchParams(window.location.search);
-        const cardParam = urlParams.get('card') || urlParams.get('greeting') || urlParams.get('d') || urlParams.get('c');
+        let cardParam = urlParams.get('card') || urlParams.get('greeting') || urlParams.get('d') || urlParams.get('c');
+
+        // 2. Check Location Hash (#card=... or #z_...)
+        if (!cardParam && window.location.hash) {
+          const hash = window.location.hash.replace(/^#/, '');
+          if (hash.startsWith('z_')) {
+            cardParam = hash;
+          } else {
+            const hashParams = new URLSearchParams(hash);
+            cardParam = hashParams.get('card') || hashParams.get('greeting') || hashParams.get('d') || hashParams.get('c');
+          }
+        }
+
         if (cardParam) {
           const decoded = this.decodeShareData(cardParam);
-          if (decoded) return decoded;
-        }
-
-        let slug = urlParams.get('to') || urlParams.get('name');
-        if (!slug) {
-          const pathSegments = window.location.pathname.split('/').filter(Boolean);
-          const lastSeg = pathSegments.pop() || '';
-          if (lastSeg && !lastSeg.endsWith('.html') && !lastSeg.endsWith('.php')) {
-            slug = lastSeg;
+          if (decoded && decoded.name) {
+            return decoded;
           }
-        }
-
-        if (slug) {
-          slug = decodeURIComponent(slug);
-          const current = this.getCurrent();
-          if (current && current.name) {
-            return current;
-          }
-          const formattedName = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
-          return {
-            name: formattedName,
-            relationship: slug,
-            birthdayMessage: `Happy Birthday, my dear ${formattedName}! Wishing you a wonderful day filled with happiness, laughter, and joy! 🎂✨`,
-            theme: 'cute',
-            showCountdown: true,
-            showMiniGame: true,
-            showConfetti: true,
-            showBalloons: true,
-            showHearts: true
-          };
         }
       } catch (e) {
         console.warn('Error reading URL parameters:', e);
