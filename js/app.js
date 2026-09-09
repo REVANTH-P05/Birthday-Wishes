@@ -486,22 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Share Button (Generates full encoded greeting URL) ──
   document.getElementById('share-btn')?.addEventListener('click', async () => {
     const shareUrl = await BirthdayData.getShareUrl();
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Happy Birthday, ${data.name || 'You'}! 🎂`,
-          text: `A special birthday surprise just for you! 🎉`,
-          url: shareUrl
-        });
-      } catch {}
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        Validation.showToast('Greeting Link copied to clipboard! 📋 Share it with them!', 'success');
-      } catch {
-        Validation.showToast('Copy this URL to share your greeting!', 'info');
-      }
-    }
+    Validation.showShareModal(shareUrl, data.name);
   });
 
   // ── Init ──

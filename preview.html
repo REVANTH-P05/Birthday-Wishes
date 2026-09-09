@@ -594,12 +594,7 @@
       // ── Copy Link ──
       document.getElementById('preview-copy-link-btn')?.addEventListener('click', async () => {
         const url = await BirthdayData.getShareUrl();
-        try {
-          await navigator.clipboard.writeText(url);
-          Validation.showToast('Greeting Link copied to clipboard! 📋 Share it with them!', 'success');
-        } catch {
-          Validation.showToast('Please copy the page URL manually.', 'info');
-        }
+        Validation.showShareModal(url, data.name);
       });
 
       // ── Init ──
